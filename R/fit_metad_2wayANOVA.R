@@ -47,12 +47,16 @@ metad_2wayANOVA <- function (nR_S1_tot, nR_S2_tot) {
   nratings <- length(nR_S1_tot[[1]][[1]])/2
   nsubj <- length((nR_S1_tot))
   
-  d1 <- matrix(ncol = 4, nrow = nsubj)
-  c1 <- matrix(ncol = 4, nrow = nsubj)
-  counts_total = array(dim = c(nsubj, nratings*4, 4))
+  # d1 <- matrix(ncol = 4, nrow = nsubj)
+  # c1 <- matrix(ncol = 4, nrow = nsubj)
+  # counts_total = array(dim = c(nsubj, nratings*4, 4))
+  d1 <- matrix(ncol = 9, nrow = nsubj)
+  c1 <- matrix(ncol = 9, nrow = nsubj)
+  counts_total = array(dim = c(nsubj, nratings*2*2, 9))
   
   for (n in 1:(nsubj)) {
-    for (i in 1:4) {
+    # for (i in 1:4) {
+      for (i in 1:9) {
       
       nR_S1 = nR_S1_tot[[n]][i]
       nR_S2 = nR_S2_tot[[n]][i]
@@ -88,22 +92,28 @@ metad_2wayANOVA <- function (nR_S1_tot, nR_S2_tot) {
     counts = counts_total,  # [Subjects * Counts * Condition]
     nratings = nratings,
     Tol = Tol,
-    Condition1 = c(1, 1, 0, 0),
-    Condition2 = c(1, 0, 1, 0),
-    Interaction = c(1, 0, 0, 0)
+    # Condition1 = c(1, 1, 0, 0),
+    # Condition2 = c(1, 0, 1, 0),
+    Condition1 = c(2,2,2,1,1,1,0,0,0),
+    Condition2 = c(2,1,0,2,1,0,2,1,0)
+    # Interaction = c(1,0,0,0)
   )
   
   ## Model using JAGS
   # Create and update model
-  aov_model <- jags.model("Bayes_metad_2wayANOVA.txt", data = data,
+  # aov_model <- jags.model("Bayes_metad_2wayANOVA.txt", data = data,
+  #                         n.chains = 3, n.adapt= 2000, quiet=FALSE)
+  aov_model <- jags.model("Bayes_metad_2wayANOVA_ordered.txt", data = data,
                           n.chains = 3, n.adapt= 2000, quiet=FALSE)
   update(aov_model, n.iter=5000)
   
   # Sampling
   output <- coda.samples( 
     model          = aov_model,
-    variable.names = c("muBd_Condition1", "lamBd_Condition1", "sigD_Condition1", "muBd_Condition2", "lamBd_Condition2", "sigD_Condition2", 
-                       "muBd_interaction", "lamBd_interaction", "sigD_interaction", "Mratio"),
+    # variable.names = c("muBd_Condition1", "lamBd_Condition1", "sigD_Condition1", "muBd_Condition2", "lamBd_Condition2", "sigD_Condition2", 
+    #                    "muBd_interaction", "lamBd_interaction", "sigD_interaction", "Mratio"),
+    variable.names = c("muBd_Condition1", "lamBd_Condition1", "sigD_Condition1", 
+                       "muBd_Condition2", "lamBd_Condition2", "sigD_Condition2","Mratio"),
     n.iter         = 10000,
     thin           = 1 )
   
